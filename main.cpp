@@ -1,6 +1,5 @@
 #include <iostream>
 #include <sys/socket.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <errno.h>
@@ -53,7 +52,7 @@ int main(void)
 	std::string message;
 	for(;;) {
 		std::cin >> message;
-		message = message + "\n";
+		message.push_back('\n');
 
 		send(sockfd, message.data(), message.size(), 0);
 
