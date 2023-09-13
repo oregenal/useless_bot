@@ -62,5 +62,7 @@ int main(void)
 		std::cout << reinterpret_cast<char*>(buffer) << '\n';
 	}
 
+	close(sockfd);
+
 	return 0;
 }
