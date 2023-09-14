@@ -31,10 +31,13 @@ int main(void)
 #define BUFFER_SIZE 102400
 	static char *buffer[BUFFER_SIZE];
 
+	int sockfds[2];
+	sockfds[0] = STDIN_FILENO;
+
 	std::cout << "Connecting to: " << SERV_ADDR << ':' << PORT << '\n';
 
-	int sockfd = socket(AF_INET, SOCK_STREAM, 0);
-	error_check("Socked failed", sockfd);
+	sockfds[1] = socket(AF_INET, SOCK_STREAM, 0);
+	error_check("Socked failed", sockfds[1]);
 
 	servaddr.sin_family = AF_INET;
 	int check = inet_aton(SERV_ADDR, &servaddr.sin_addr);
@@ -44,29 +47,55 @@ int main(void)
 	}
 	servaddr.sin_port = htons(PORT);
 
-	check = connect(sockfd, 
+	check = connect(sockfds[1], 
 					reinterpret_cast<struct sockaddr*>(&servaddr), 
 					sizeof(servaddr));
 	error_check("Connection failed", check);
 
 	for(;;) {
-		std::string message;
-		std::cin >> message;
-		message.push_back('\n');
+		fd_set readfds;
+		int max_d = sockfds[1];
 
-		//TODO: learn about send() & recev().
-		check = write(sockfd, message.data(), message.size());
-		error_check("Data send fail", check);
+		FD_ZERO(&readfds);
+		FD_SET(sockfds[0], &readfds);
+		FD_SET(sockfds[1], &readfds);
 
-		check = read(sockfd, buffer, BUFFER_SIZE);
-		error_check("Data recive fail", check);
-		if(check == 0)
-			break;
+		int res = select(max_d+1, &readfds, NULL, NULL, NULL);
+		if(res == -1) {
+			if(errno == EINTR) {
+				// recived signal error
+			} else {
+				// select error
+			}
+			continue;
+		}
 
-		std::cout << reinterpret_cast<char*>(buffer) << '\n';
+		if(res == 0) {
+			// timeout
+			continue;
+		}
+
+		if(FD_ISSET(sockfds[0], &readfds)) {
+			std::string message;
+			std::cin >> message;
+			message.push_back('\n');
+
+			//TODO: May be better send() & reciv().
+			check = write(sockfds[1], message.data(), message.size());
+			error_check("Data send fail", check);
+		}
+
+		if(FD_ISSET(sockfds[1], &readfds)) {
+			check = read(sockfds[1], buffer, BUFFER_SIZE);
+			error_check("Data recive fail", check);
+			if(check == 0)
+				break;
+
+			std::cout << reinterpret_cast<char*>(buffer);
+		}
 	}
 
-	close(sockfd);
+	close(sockfds[1]);
 
 	return 0;
 }
