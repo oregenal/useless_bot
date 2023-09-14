@@ -16,6 +16,10 @@
 
 #endif
 
+#define BUFFER_SIZE 102400
+static char *buffer[BUFFER_SIZE];
+
+bool end_of_file = false;
 
 void error_check(const char *reason, int err)
 {
@@ -25,11 +29,19 @@ void error_check(const char *reason, int err)
 	}
 }
 
+void data_transfer(int srcfd, int destfd) {
+	int check = read(srcfd, buffer, BUFFER_SIZE);
+	error_check("Data recive fail", check);
+	if(check == 0)
+		end_of_file = true;
+
+	check = write(destfd, buffer, check);
+	error_check("Data send fail", check);
+}
+
 int main(void)
 {
 	struct sockaddr_in servaddr;
-#define BUFFER_SIZE 102400
-	static char *buffer[BUFFER_SIZE];
 
 	int sockfds[2];
 	sockfds[0] = STDIN_FILENO;
@@ -48,8 +60,8 @@ int main(void)
 	servaddr.sin_port = htons(PORT);
 
 	check = connect(sockfds[1], 
-					reinterpret_cast<struct sockaddr*>(&servaddr), 
-					sizeof(servaddr));
+			reinterpret_cast<struct sockaddr*>(&servaddr), 
+			sizeof(servaddr));
 	error_check("Connection failed", check);
 
 	for(;;) {
@@ -57,8 +69,8 @@ int main(void)
 		int max_d = sockfds[1];
 
 		FD_ZERO(&readfds);
-		FD_SET(sockfds[0], &readfds);
-		FD_SET(sockfds[1], &readfds);
+		FD_SET(sockfds[0], &readfds);	// stdin
+		FD_SET(sockfds[1], &readfds);	// site
 
 		int res = select(max_d+1, &readfds, NULL, NULL, NULL);
 		if(res == -1) {
@@ -75,24 +87,14 @@ int main(void)
 			continue;
 		}
 
-		if(FD_ISSET(sockfds[0], &readfds)) {
-			std::string message;
-			std::cin >> message;
-			message.push_back('\n');
+		if(FD_ISSET(sockfds[0], &readfds)) 
+			data_transfer(sockfds[0], sockfds[1]);
 
-			//TODO: May be better send() & reciv().
-			check = write(sockfds[1], message.data(), message.size());
-			error_check("Data send fail", check);
-		}
+		if(FD_ISSET(sockfds[1], &readfds)) 
+			data_transfer(sockfds[1], sockfds[0]);
 
-		if(FD_ISSET(sockfds[1], &readfds)) {
-			check = read(sockfds[1], buffer, BUFFER_SIZE);
-			error_check("Data recive fail", check);
-			if(check == 0)
-				break;
-
-			std::cout << reinterpret_cast<char*>(buffer);
-		}
+		if(end_of_file)
+			break;
 	}
 
 	close(sockfds[1]);
