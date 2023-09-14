@@ -28,7 +28,7 @@ void error_check(const char *reason, int err)
 int main(void)
 {
 	struct sockaddr_in servaddr;
-#define BUFFER_SIZE 10240
+#define BUFFER_SIZE 102400
 	static char *buffer[BUFFER_SIZE];
 
 	std::cout << "Connecting to: " << SERV_ADDR << ':' << PORT << '\n';
@@ -49,14 +49,19 @@ int main(void)
 					sizeof(servaddr));
 	error_check("Connection failed", check);
 
-	std::string message;
 	for(;;) {
+		std::string message;
 		std::cin >> message;
 		message.push_back('\n');
 
-		send(sockfd, message.data(), message.size(), 0);
+		//TODO: learn about send() & recev().
+		check = write(sockfd, message.data(), message.size());
+		error_check("Data send fail", check);
 
-		recv(sockfd, buffer, BUFFER_SIZE, 0);
+		check = read(sockfd, buffer, BUFFER_SIZE);
+		error_check("Data recive fail", check);
+		if(check == 0)
+			break;
 
 		std::cout << reinterpret_cast<char*>(buffer) << '\n';
 	}
