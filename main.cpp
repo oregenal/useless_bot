@@ -68,10 +68,7 @@ int main(void)
 			int res = select(max_d+1, &readfds, NULL, NULL, NULL);
 			if(res == -1) throw "Recived signal error";
 
-			if(res == 0) {
-				// timeout
-				continue;
-			}
+			if(res == 0) continue;			// timeout 
 
 			if(FD_ISSET(sockfds[0], &readfds)) 
 				data_transfer(sockfds[0], sockfds[1]);
@@ -81,9 +78,9 @@ int main(void)
 
 			if(end_of_file)
 				break;
-
-			close(sockfds[1]);
 		}
+
+		close(sockfds[1]);
 
 	} catch(const char *str) {
 		close(sockfds[1]);
