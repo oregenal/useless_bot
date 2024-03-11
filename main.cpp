@@ -43,21 +43,13 @@ bool end_of_file = false;
 void data_transfer(int srcfd, int destfd) {
 	int check = read(srcfd, buffer, BUFFER_SIZE);
 	if(-1 == check)
-<<<<<<< HEAD
-		throw "Data recive fail";
-=======
 		throw NetError("Data recive fail");
->>>>>>> NetError
 	if(check == 0)
 		end_of_file = true;
 
 	check = write(destfd, buffer, check);
 	if(-1 == check)
-<<<<<<< HEAD
-		throw "Data send fail";
-=======
 		throw NetError("Data send fail");
->>>>>>> NetError
 }
 
 int main(void)
@@ -72,11 +64,7 @@ int main(void)
 	try {
 		sockfds[1] = socket(AF_INET, SOCK_STREAM, 0);
 		if(-1 == sockfds[1])
-<<<<<<< HEAD
-			throw "Socket failed";
-=======
 			throw NetError("Socket failed");
->>>>>>> NetError
 
 		servaddr.sin_family = AF_INET;
 		int check = inet_aton(SERV_ADDR, &servaddr.sin_addr);
@@ -90,11 +78,7 @@ int main(void)
 				reinterpret_cast<struct sockaddr*>(&servaddr), 
 				sizeof(servaddr));
 		if(-1 == check)
-<<<<<<< HEAD
-			throw "Connection failed";
-=======
 			throw NetError("Connection failed");
->>>>>>> NetError
 
 		for(;;) {
 			fd_set readfds;
@@ -106,11 +90,7 @@ int main(void)
 
 			int res = select(max_d+1, &readfds, NULL, NULL, NULL);
 			if(res == -1)
-<<<<<<< HEAD
-				throw "Recived signal error";
-=======
 				throw NetError("Recived signal error");
->>>>>>> NetError
 
 			if(res == 0)
 				continue;			// timeout 
