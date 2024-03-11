@@ -5,3 +5,8 @@ SRCFILES=main.cpp
 
 $(BIN):$(SRCFILES)
 	$(CXX) $(CXXFLAGS) -o $@ $^
+
+.PHONY:clean
+
+clean:
+	rm -rf $(BIN)
