@@ -20,15 +20,18 @@
 class NetError {
 private:
 	char *msg;
+	static char *SetMessage(const char *message) {
+		char *newmsg = new char[strlen(message)+1];
+		strcpy(newmsg, message);
+		return newmsg;
+	}
 
 public:
 	NetError(const char *message) {
-		msg = new char[strlen(message)+1];
-		strcpy(msg, message);
+		msg = SetMessage(message);
 	}
 	NetError(const NetError &err) {
-		msg = new char[strlen(err.msg)+1];
-		strcpy(msg, err.msg);
+		msg = SetMessage(err.GetMsg());
 	}
 	~NetError() { delete[] msg; }
 
