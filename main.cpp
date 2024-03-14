@@ -22,12 +22,12 @@ private:
 	char *msg;
 
 public:
-	NetError(const char *msg) {
-		msg = new char[256];
-		strcpy(this->msg, msg);
+	NetError(const char *message) {
+		msg = new char[strlen(message)+1];
+		strcpy(msg, message);
 	}
 	NetError(const NetError &err) {
-		msg = new char[256];
+		msg = new char[strlen(err.msg)+1];
 		strcpy(msg, err.msg);
 	}
 	~NetError() { delete[] msg; }
@@ -35,7 +35,7 @@ public:
 	char *GetMsg() const { return msg; };
 };
 
-#define BUFFER_SIZE 102400
+#define BUFFER_SIZE 1024*1024
 static char *buffer[BUFFER_SIZE];
 
 bool end_of_file = false;
@@ -107,7 +107,7 @@ int main(void)
 
 		close(sockfds[1]);
 
-	} catch(const NetError& str) {
+	} catch(const NetError &str) {
 		close(sockfds[1]);
 		perror(str.GetMsg());
 		return 1;
