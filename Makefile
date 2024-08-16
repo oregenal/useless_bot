@@ -1,5 +1,5 @@
 CXX=g++
-CXXFLAGS=-Wall -Wextra -std=c++11 -pedantic -ggdb
+CXXFLAGS=-Wall -Wextra -std=c++14 -pedantic -ggdb
 BIN=bot
 SRCFILES=main.cpp
 
