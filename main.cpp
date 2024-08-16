@@ -33,7 +33,7 @@ public:
 	NetError(const NetError &err) {
 		msg = SetMessage(err.GetMsg());
 	}
-	~NetError() { delete[] msg; }
+	~NetError() { if (msg != nullptr) delete[] msg; }
 
 	char *GetMsg() const { return msg; };
 };
